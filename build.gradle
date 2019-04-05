@@ -1,0 +1,49 @@
+buildscript {
+    repositories {
+        google()
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.2.0-beta05'
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
+    }
+}
+
+allprojects {
+    repositories {
+	 mavenCentral()//如果 jcenter 很慢，尝试添加 mavenCentral 并调整到首行
+        google()
+        jcenter()
+		maven { url "https://jitpack.io" }
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+//定义全局属性
+ext{
+    //项目的源和目标兼容性值保留为 Java 7
+    sourceCompatibility = JavaVersion.VERSION_1_7
+    targetCompatibility = JavaVersion.VERSION_1_7
+
+    compileSdkVersion = 28
+    buildToolsVersion = "28.0.3"
+    minSdkVersion = 23
+    targetSdkVersion = 28
+    versionCode = 1
+    versionName = "2.0.1"
+    supportVersion = "28.0.3"
+
+    renderscriptTargetApi = 19
+    renderscriptSupportModeEnabled = true
+
+    //library版本
+    jjdxm_minSdkVersion = 9
+    jjdxm_versionCode = 1
+    jjdxm_versionName = "1.0.0"
+    jjdxm_v4 = 'com.android.support:support-v4:23.3.0'
+    jjdxm_v7 = 'com.android.support:appcompat-v7:23.3.0'
+
+}
