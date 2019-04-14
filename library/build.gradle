@@ -64,5 +64,5 @@ dependencies {
     implementation 'com.squareup.retrofit2:converter-gson:2.1.0'
     //jsoup网页解析
     implementation 'org.jsoup:jsoup:1.8.3'
-    implementation 'com.github.zxintg:zxinroot:v1.0.4'
+    implementation 'com.github.zxintg:zxinroot:v1.1.2'
 }
