@@ -6,9 +6,6 @@ import android.net.NetworkInfo;
 import android.os.Build;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
-
-import com.zxin.network.pagestate.PageManager;
-
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
@@ -126,6 +123,7 @@ public class NetworkUtil {
             httpUrl.connect();
             result = true;
         } catch (IOException e) {
+            result = false;
         } finally {
             if (null != httpUrl) {
                 httpUrl.disconnect();

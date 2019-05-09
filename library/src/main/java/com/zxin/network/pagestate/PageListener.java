@@ -1,9 +1,15 @@
 package com.zxin.network.pagestate;
 
+import android.content.Context;
 import android.view.View;
 
 public abstract class PageListener {
 
+    public Context mContext;
+
+    public PageListener(Context mContext){
+        this.mContext = mContext;
+    }
 
     public abstract void onRetry(View retryView);
 

@@ -70,7 +70,7 @@ public class PageManager {
      */
     public void init(final Object activityOrView, boolean showLoadingFirstIn, final Runnable retryAction) {
         if (listener == null){
-            listener = new MyPageListener() {
+            listener = new MyPageListener(mContext) {
                 @Override
                 protected void onReallyRetry() {
                     retryAction.run();

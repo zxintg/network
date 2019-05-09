@@ -1,5 +1,6 @@
 package com.zxin.network.pagestate;
 
+import android.content.Context;
 import android.content.Intent;
 import android.view.Gravity;
 import android.view.View;
@@ -13,6 +14,11 @@ import com.zxin.root.view.dialog.ConfirmDialog;
  */
 
 public abstract class MyPageListener extends PageListener {
+
+    public MyPageListener(Context mContext){
+        super(mContext);
+    }
+
     @Override
     public void onRetry(View retryView) {
         if (!SystemInfoUtil.getInstance(retryView.getContext()).isNetworkAvailable()) {
@@ -37,7 +43,7 @@ public abstract class MyPageListener extends PageListener {
                         intent = new Intent();
                         intent.setClassName("com.android.settings", "com.android.settings.WirelessSettings");
                     }
-                    AppManager.getAppManager().currentActivity().startActivity(intent);
+                    mContext.startActivity(intent);
                 }
 
                 @Override
