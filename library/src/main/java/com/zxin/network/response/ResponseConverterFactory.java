@@ -11,7 +11,7 @@ import retrofit2.Converter;
 import retrofit2.Retrofit;
 
 /**
- * Created by hy on 2017/10/19.
+ * Created by zxin on 2017/10/19.
  */
 public class ResponseConverterFactory extends Converter.Factory {
     public static ResponseConverterFactory create() {

@@ -43,6 +43,8 @@ public class NetworkUtil {
         return networkUtil;
     }
 
+
+
     /**
      * 判断当前网络是否可用
      */

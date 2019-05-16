@@ -2,16 +2,15 @@ package com.zxin.network.http;
 
 import android.content.Context;
 
+import com.zxin.network.api.ZXinBaseApi;
 import com.zxin.network.api.ZXinWebApi;
-import com.zxin.network.interceptor.CommonParamsInterceptor;
+import com.zxin.network.interceptor.BaseNetWorkInterceptor;
 import com.zxin.network.interceptor.HttpCacheInterceptor;
 import com.zxin.network.interceptor.HttpHeaderInterceptor;
 import com.zxin.network.response.ResponseConverterFactory;
 import com.zxin.network.util.NetworkUtil;
-
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-
 import okhttp3.CacheControl;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -30,6 +29,7 @@ public class RetrofitHelper {
     private static volatile OkHttpClient mOkHttpClient;
     private static volatile RetrofitHelper retrofitHelper;
     private Context mContext;
+    private String  mBaseUrl = "";
 
     private RetrofitHelper(Context mContext) {
         this.mContext = mContext;
@@ -63,6 +63,31 @@ public class RetrofitHelper {
             addInterceptor(builder);
             mOkHttpClient = builder.build();
         }
+    }
+
+    private BaseNetWorkInterceptor mInterceptor;
+
+    public synchronized <In extends BaseNetWorkInterceptor> void addIntercept(In intercept) {
+        this.mInterceptor = intercept;
+    }
+
+    public <API extends ZXinBaseApi> API initZxinAPI(Class<API> service){
+        return new Retrofit.Builder()
+                .client(mOkHttpClient)
+                .baseUrl(getmBaseUrl())
+                .addConverterFactory(ScalarsConverterFactory.create())
+                .addConverterFactory(ResponseConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                .build().create(service);
+    }
+
+    public String getmBaseUrl() {
+        return mBaseUrl;
+    }
+
+    public void setmBaseUrl(String mBaseUrl) {
+        this.mBaseUrl = mBaseUrl;
     }
 
     public ZXinWebApi getZXinWebApi(String baseUrl) {
@@ -149,7 +174,9 @@ public class RetrofitHelper {
         //缓存拦截
         builder.addInterceptor(new HttpCacheInterceptor(mContext));
         //请求参数拦截
-        builder.addInterceptor(new CommonParamsInterceptor());
+        if (mInterceptor != null) {
+            builder.addInterceptor(mInterceptor);
+        }
     }
 
     /**
