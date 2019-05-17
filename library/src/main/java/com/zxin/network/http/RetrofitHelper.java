@@ -9,8 +9,10 @@ import com.zxin.network.interceptor.HttpCacheInterceptor;
 import com.zxin.network.interceptor.HttpHeaderInterceptor;
 import com.zxin.network.response.ResponseConverterFactory;
 import com.zxin.network.util.NetworkUtil;
+
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+
 import okhttp3.CacheControl;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -23,58 +25,79 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 public class RetrofitHelper {
-    private static final int DEFAULT_TIME_OUT = 10;//超时时间5s
-    private static final int DEFAULT_READ_TIME_OUT = 10;//读取时间
-    private static final int DEFAULT_WRITE_TIME_OUT = 10;//读取时间
+    private int DEFAULT_TIME_OUT = 10;//超时时间5s
+    private int DEFAULT_READ_TIME_OUT = 10;//读取时间
+    private int DEFAULT_WRITE_TIME_OUT = 10;//读取时间
     private static volatile OkHttpClient mOkHttpClient;
     private static volatile RetrofitHelper retrofitHelper;
     private Context mContext;
-    private String  mBaseUrl = "";
+    private String mBaseUrl = "";
 
     private RetrofitHelper(Context mContext) {
         this.mContext = mContext;
     }
 
-    /****
-     * 初始化
-     * @param mContext
-     * @return
+    private BaseNetWorkInterceptor[] mInterceptors;
+
+    /*****
+     * 添加拦截器
+     * @param intercept
+     * @param <In>
      */
-    public static RetrofitHelper getInstance(Context mContext) {
-        if (retrofitHelper == null) {
-            synchronized (RetrofitHelper.class) {
-                if (retrofitHelper == null) {
-                    retrofitHelper = new RetrofitHelper(mContext);
-                }
-            }
-        }
-        return retrofitHelper;
+    private synchronized <In extends BaseNetWorkInterceptor> void setIntercepts(In... intercept) {
+        this.mInterceptors = intercept;
     }
 
-    public synchronized void initOkHttpClient() {
+    public String getBaseUrl() {
+        return mBaseUrl;
+    }
+
+    private void setmBaseUrl(String mBaseUrl) {
+        this.mBaseUrl = mBaseUrl;
+    }
+
+    private void setDefaultTimeOut(int defaultTimeOut){
+        DEFAULT_TIME_OUT = defaultTimeOut;
+    }
+
+    private void setDefaultReadTimeOut(int defaultReadTimeOut){
+        DEFAULT_READ_TIME_OUT = defaultReadTimeOut;
+    }
+
+    private void setDefaultWriteTimeOut(int defaultWriteTimeOut){
+        DEFAULT_WRITE_TIME_OUT = defaultWriteTimeOut;
+    }
+
+    /*****
+     * 创建
+     */
+    public synchronized void create() {
         if (mOkHttpClient == null) {
             //设置Http缓存
             OkHttpClient.Builder builder = new OkHttpClient.Builder();
             builder.connectTimeout(DEFAULT_TIME_OUT, TimeUnit.SECONDS);
             builder.readTimeout(DEFAULT_READ_TIME_OUT, TimeUnit.SECONDS);
             builder.writeTimeout(DEFAULT_WRITE_TIME_OUT, TimeUnit.SECONDS);
-            //builder.addInterceptor(addHeaderInterceptor()); // token过滤
-            builder.addInterceptor(addCacheInterceptor());//缓存信息
-            addInterceptor(builder);
+            //添加拦截器
+            if (mInterceptors != null && mInterceptors.length > 0) {
+                for (BaseNetWorkInterceptor mInterceptor : mInterceptors) {
+                    builder.addInterceptor(mInterceptor);
+                }
+            }
             mOkHttpClient = builder.build();
         }
     }
 
-    private BaseNetWorkInterceptor mInterceptor;
-
-    public synchronized <In extends BaseNetWorkInterceptor> void addIntercept(In intercept) {
-        this.mInterceptor = intercept;
-    }
-
-    public <API extends ZXinBaseApi> API initZxinAPI(Class<API> service){
+    /****
+     * 初始化API
+     * @param service
+     * @param <API>
+     * @return
+     */
+    public <API extends ZXinBaseApi> API initZxinAPI(Class<API> service) {
         return new Retrofit.Builder()
                 .client(mOkHttpClient)
-                .baseUrl(getmBaseUrl())
+                .baseUrl(getBaseUrl())
                 .addConverterFactory(ScalarsConverterFactory.create())
                 .addConverterFactory(ResponseConverterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())
@@ -82,137 +105,52 @@ public class RetrofitHelper {
                 .build().create(service);
     }
 
-    public String getmBaseUrl() {
-        return mBaseUrl;
-    }
+    public static class Builder {
+        private Context mContext;
+        private String mBaseUrl;
+        private int timeOut;
+        private int readTimeOut;
+        private int writeTimeOut;
+        private BaseNetWorkInterceptor[] mInterceptors;
 
-    public void setmBaseUrl(String mBaseUrl) {
-        this.mBaseUrl = mBaseUrl;
-    }
-
-    public ZXinWebApi getZXinWebApi(String baseUrl) {
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .client(mOkHttpClient)
-                .baseUrl(baseUrl)
-                .addConverterFactory(ScalarsConverterFactory.create())
-                //.addConverterFactory(ResponseConverterFactory.create())
-                .addConverterFactory(GsonConverterFactory.create())
-                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
-                .build();
-        return retrofit.create(ZXinWebApi.class);
-    }
-
-    public <Api> Api getZXinMarryApi(String baseUrl, Class<Api> service) {
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .client(mOkHttpClient)
-                .baseUrl(baseUrl)
-                .addConverterFactory(ScalarsConverterFactory.create())
-                .addConverterFactory(ResponseConverterFactory.create())
-                .addConverterFactory(GsonConverterFactory.create())
-                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
-                .build();
-        return retrofit.create(service);
-    }
-
-    public <Api> Api getZXinJiuXianApi(String baseUrl, Class<Api> service) {
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .client(mOkHttpClient)
-                .baseUrl(baseUrl)
-                .addConverterFactory(ScalarsConverterFactory.create())
-                .addConverterFactory(ResponseConverterFactory.create("JiuXian"))
-                .addConverterFactory(GsonConverterFactory.create())
-                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
-                .build();
-        return retrofit.create(service);
-    }
-
-    public <Api> Api getZXinJdxsxpApi(String baseUrl, Class<Api> service) {
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .client(mOkHttpClient)
-                .baseUrl(baseUrl)
-                .addConverterFactory(ScalarsConverterFactory.create())
-                .addConverterFactory(ResponseConverterFactory.create("Jdxsxp"))
-                .addConverterFactory(GsonConverterFactory.create())
-                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
-                .build();
-        return retrofit.create(service);
-    }
-
-    public <Api> Api getZXinMeiZiYoWuApi(String baseUrl, Class<Api> service) {
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .client(mOkHttpClient)
-                .baseUrl(baseUrl)
-                .addConverterFactory(ScalarsConverterFactory.create())
-                .addConverterFactory(ResponseConverterFactory.create("MeiZiYoWu"))
-                .addConverterFactory(GsonConverterFactory.create())
-                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
-                .build();
-        return retrofit.create(service);
-
-    }
-
-    /**
-     * 添加各种拦截器
-     *
-     * @param builder
-     */
-    private void addInterceptor(OkHttpClient.Builder builder) {
-        // 添加日志拦截器
-        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
-        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-
-        HttpHeaderInterceptor httpHeaderInterceptor = new HttpHeaderInterceptor.Builder().build();
-        //日志拦截
-        builder.addInterceptor(loggingInterceptor);
-        //头部参数拦截
-        builder.addInterceptor(httpHeaderInterceptor);
-        //缓存拦截
-        builder.addInterceptor(new HttpCacheInterceptor(mContext));
-        //请求参数拦截
-        if (mInterceptor != null) {
-            builder.addInterceptor(mInterceptor);
+        public Builder(Context mContext){
+            this.mContext = mContext;
         }
-    }
 
-    /**
-     * 设置缓存
-     */
-    private Interceptor addCacheInterceptor() {
-        Interceptor cacheInterceptor = new Interceptor() {
-            @Override
-            public Response intercept(Chain chain) throws IOException {
-                Request request = chain.request();
-                if (!NetworkUtil.getInstance(mContext).isNetWorkAviliable()) {
-                    request = request.newBuilder()
-                            .cacheControl(CacheControl.FORCE_CACHE)
-                            .build();
-                }
-                Response response = chain.proceed(request);
-                if (NetworkUtil.getInstance(mContext).isNetWorkAviliable()) {
-                    int maxAge = 0;
-                    // 有网络时 设置缓存超时时间0个小时 ,意思就是不读取缓存数据,只对get有用,post没有缓冲
-                    response.newBuilder()
-                            .header("Cache-Control", "public, max-age=" + maxAge)
-                            .removeHeader("Retrofit")// 清除头信息，因为服务器如果不支持，会返回一些干扰信息，不清除下面无法生效
-                            .build();
-                } else {
-                    // 无网络时，设置超时为4周  只对get有用,post没有缓冲
-                    int maxStale = 60 * 60 * 24 * 28;
-                    response.newBuilder()
-                            .header("Cache-Control", "public, only-if-cached, max-stale=" +
-                                    maxStale)
-                            .removeHeader("nyn")
-                            .build();
-                }
-                return response;
-            }
-        };
-        return cacheInterceptor;
+        public Builder addBaseUrl(String mBaseUrl){
+            this.mBaseUrl = mBaseUrl;
+            return this;
+        }
+
+        public Builder addTimeOut(int timeOut){
+            this.timeOut = timeOut;
+            return this;
+        }
+
+        public Builder addReadTimeOut(int readTimeOut){
+            this.readTimeOut = readTimeOut;
+            return this;
+        }
+
+        public Builder addWriteTimeOut(int writeTimeOut){
+            this.writeTimeOut = writeTimeOut;
+            return this;
+        }
+
+        public Builder addInterceptors(BaseNetWorkInterceptor[] mInterceptors){
+            this.mInterceptors = mInterceptors;
+            return this;
+        }
+
+        public RetrofitHelper build(){
+            RetrofitHelper helper = new RetrofitHelper(mContext);
+            helper.setmBaseUrl(mBaseUrl);
+            helper.setIntercepts(mInterceptors);
+            helper.setDefaultTimeOut(timeOut);
+            helper.setDefaultReadTimeOut(readTimeOut);
+            helper.setDefaultWriteTimeOut(writeTimeOut);
+            return helper;
+        }
     }
 
 }

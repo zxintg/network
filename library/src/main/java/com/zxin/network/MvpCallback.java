@@ -9,7 +9,7 @@ public interface MvpCallback {
      * 数据请求成功
      * @param data 请求到的数据
      */
-    void  onSuccess(int tage,Object data);
+    void  onSuccess(int tager,Object data);
 
     /**
      *  使用网络API接口请求方式时，虽然已经请求成功但是由

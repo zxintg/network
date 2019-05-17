@@ -1,37 +1,22 @@
 package com.zxin.network.mvp.model;
 
 import android.content.Context;
+
 import com.zxin.network.MvpCallback;
-import com.zxin.network.http.RetrofitHelper;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Created by Administrator on 2017/11/27.
+ * Created by zxin on 2017/11/27.
  */
 
 public class BaseModel {
-    private RetrofitHelper httpService;
     private Context context;
 
-    private MvpCallback listener;
+    private List<MvpCallback> listListener;
+
     private int tag;
-
-    public RetrofitHelper getInstance() {
-        if (httpService == null) {
-            synchronized (BaseModel.class){
-                if (httpService == null) {
-                    httpService = RetrofitHelper.getInstance(context);
-                }
-            }
-        }
-        return httpService;
-    }
-
-    public void initOkHttpClient() {
-        if (httpService == null){
-            getInstance();
-        }
-        httpService.initOkHttpClient();
-    }
 
     public Context getContext() {
         return context;
@@ -42,11 +27,36 @@ public class BaseModel {
     }
 
     public MvpCallback getListener() {
-        return listener;
+        if (listListener != null && !listListener.isEmpty()) {
+            return listListener.get(listListener.size()-1);
+        }
+        return null;
     }
 
-    public void setListener(MvpCallback listener) {
-        this.listener = listener;
+    public void setListener(MvpCallback... listeners) {
+        if (listeners != null && listeners.length > 0) {
+            if (listListener == null) {
+                listListener = new ArrayList<>();
+            }
+            for (MvpCallback listener : listeners) {
+                if (listListener.contains(listener)){
+                    continue;
+                }
+                listListener.add(listener);
+            }
+        }
+    }
+
+    public void clearListener(){
+        if (listListener != null) {
+            listListener.clear();
+        }
+    }
+
+    public void removeListener(MvpCallback listener){
+        if (listListener != null) {
+            listListener.remove(listener);
+        }
     }
 
     public int getTag() {
@@ -56,5 +66,6 @@ public class BaseModel {
     public void setTag(int tag) {
         this.tag = tag;
     }
+
 
 }
