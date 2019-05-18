@@ -5,6 +5,7 @@ import okhttp3.FormBody;
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /*****
@@ -13,7 +14,7 @@ import okhttp3.Response;
  * by zxin
  *
  */
-public abstract class BaseNetWorkInterceptor implements Interceptor {
+public abstract class ZxinBaseInterceptor implements Interceptor {
 
     @Override
     public Response intercept(Chain chain) throws IOException {
@@ -23,12 +24,7 @@ public abstract class BaseNetWorkInterceptor implements Interceptor {
             request = request.newBuilder().url(interceptRequestByGet(request.url().newBuilder()).build()).build();
         } else if (request.method().equals("POST")) {
             if (request.body() instanceof FormBody) {
-                FormBody.Builder bodyBuilder = new FormBody.Builder();
-                FormBody formBody = (FormBody) request.body();
-                for (int i = 0; i < formBody.size(); i++) {
-                    bodyBuilder.addEncoded(formBody.encodedName(i), formBody.encodedValue(i));
-                }
-                request = request.newBuilder().post(interceptRequestByPost(bodyBuilder).build()).build();
+                request = request.newBuilder().post(interceptRequestByPost(request.body()).build()).build();
             }
         }
         return chain.proceed(request);
@@ -36,5 +32,7 @@ public abstract class BaseNetWorkInterceptor implements Interceptor {
 
     public abstract HttpUrl.Builder interceptRequestByGet(HttpUrl.Builder builder);
 
-    public abstract FormBody.Builder interceptRequestByPost(FormBody.Builder builder);
+    public abstract FormBody.Builder interceptRequestByPost(RequestBody requestBody);
+
+    public abstract Response interceptResponse(Chain chain,Request request);
 }

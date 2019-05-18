@@ -2,7 +2,7 @@ package com.zxin.network.http;
 
 import android.content.Context;
 import com.zxin.network.api.ZXinBaseApi;
-import com.zxin.network.interceptor.BaseNetWorkInterceptor;
+import com.zxin.network.interceptor.ZxinBaseInterceptor;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -18,7 +18,7 @@ public class RetrofitHelper {
     private volatile OkHttpClient mOkHttpClient;
     private Context mContext;
 
-    private BaseNetWorkInterceptor[] mInterceptors;
+    private ZxinBaseInterceptor[] mInterceptors;
 
     private Converter.Factory[] mFactorys;
 
@@ -33,7 +33,7 @@ public class RetrofitHelper {
      * @param mInterceptors
      * @param <In>
      */
-    private synchronized <In extends BaseNetWorkInterceptor> void setIntercepts(In... mInterceptors) {
+    private synchronized <In extends ZxinBaseInterceptor> void setIntercepts(In... mInterceptors) {
         this.mInterceptors = mInterceptors;
     }
 
@@ -70,7 +70,7 @@ public class RetrofitHelper {
             builder.writeTimeout(DEFAULT_WRITE_TIME_OUT, TimeUnit.SECONDS);
             //添加拦截器
             if (mInterceptors != null && mInterceptors.length > 0) {
-                for (BaseNetWorkInterceptor mInterceptor : mInterceptors) {
+                for (ZxinBaseInterceptor mInterceptor : mInterceptors) {
                     builder.addInterceptor(mInterceptor);
                 }
             }
@@ -162,7 +162,7 @@ public class RetrofitHelper {
         private int timeOut;
         private int readTimeOut;
         private int writeTimeOut;
-        private BaseNetWorkInterceptor[] mInterceptors;
+        private ZxinBaseInterceptor[] mInterceptors;
         private Converter.Factory[] mFactorys;
 
         public Builder(Context mContext) {
@@ -184,12 +184,12 @@ public class RetrofitHelper {
             return this;
         }
 
-        public Builder addInterceptors(BaseNetWorkInterceptor[] mInterceptors) {
+        public Builder addInterceptors(ZxinBaseInterceptor... mInterceptors) {
             this.mInterceptors = mInterceptors;
             return this;
         }
 
-        public Builder addFactorys(Converter.Factory[] mFactorys) {
+        public Builder addFactorys(Converter.Factory... mFactorys) {
             this.mFactorys = mFactorys;
             return this;
         }
