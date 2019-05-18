@@ -3,21 +3,27 @@ package com.zxin.network.mvp.model;
 import android.content.Context;
 
 import com.zxin.network.MvpCallback;
+import com.zxin.network.mvp.presenter.BasePresenter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by zxin on 2017/11/27.
  */
 
 public class BaseModel {
+
     private Context context;
-
-    private List<MvpCallback> listListener;
-
-    private int tag;
+    //回调
+    private Map<String, MvpCallback> listenerMap;
+    //标志位 对应SimpleName
+    private Map<Integer,String> tagMap;
+    //标志位 网络失败时使用
+    private List<Integer> tagList;
 
     public Context getContext() {
         return context;
@@ -27,46 +33,62 @@ public class BaseModel {
         this.context = context;
     }
 
-    public MvpCallback getListener() {
-        if (listListener != null && !listListener.isEmpty()) {
-            return listListener.get(listListener.size()-1);
+    public MvpCallback getListener(int tag) {
+        if(tagMap!=null){
+            return listenerMap.get(tagMap.get(tag));
         }
         return null;
     }
 
-    public void setListener(MvpCallback... listeners) {
-        if (listeners != null && listeners.length > 0) {
-            if (listListener == null) {
-                listListener = new ArrayList<>();
-            }
-            for (MvpCallback listener : listeners) {
-                if (listListener.contains(listener)){
-                    continue;
-                }
-                listListener.add(listener);
-            }
+    public <P extends BasePresenter> void setListener(P p, MvpCallback listeners) {
+        if (listenerMap == null) {
+            listenerMap = new HashMap<>();
+        }
+        if (listenerMap != null && !listenerMap.containsKey(p.getClass().getSimpleName())) {
+            listenerMap.put(p.getClass().getSimpleName(),listeners);
         }
     }
 
-    public void clearListener(){
-        if (listListener != null) {
-            listListener.clear();
+    public void clearListener() {
+        if (listenerMap != null) {
+            listenerMap.clear();
         }
     }
 
-    public void removeListener(MvpCallback listener){
-        if (listListener != null) {
-            listListener.remove(listener);
+    public <P extends BasePresenter> void removeListener(P p) {
+        if (listenerMap != null) {
+            listenerMap.remove(p.getClass().getSimpleName());
         }
     }
 
-    public int getTag() {
-        return tag;
+    public <P extends BasePresenter> void addTag(P p,int tag) {
+        if (tagList == null) {
+            tagList = new ArrayList<>();
+        }
+        if (tagList != null && !tagList.contains(tag)) {
+            this.tagList.add(tag);
+        }
+        if (tagMap == null) {
+            tagMap = new HashMap<>();
+        }
+        if (!tagMap.containsKey(tag)){
+            tagMap.put(tag,p.getClass().getSimpleName());
+        }
     }
 
-    public void setTag(int tag) {
-        this.tag = tag;
+    public void clearTags() {
+        if (tagList != null && !tagList.isEmpty()) {
+            tagList.clear();
+        }
     }
 
+    public void removeTag(int tag) {
+        if (tagList != null && !tagList.isEmpty()) {
+            tagList.remove(tag);
+        }
+        if (tagMap != null && !tagMap.isEmpty()) {
+            tagMap.remove(tag);
+        }
+    }
 
 }

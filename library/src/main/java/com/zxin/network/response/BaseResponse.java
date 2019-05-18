@@ -1,7 +1,5 @@
 package com.zxin.network.response;
 
-import com.zxin.network.util.NetworkUtil;
-
 /**
  * Created by Administrator on 2018/3/24.
  */

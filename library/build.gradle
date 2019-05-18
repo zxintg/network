@@ -39,8 +39,6 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     testImplementation 'junit:junit:4.12'
-
-    implementation 'com.github.zxintg:zxinroot:v1.3.2'
     //RxLifecycle 内存泄露
     api 'com.trello:rxlifecycle:1.0'
     api 'com.trello:rxlifecycle-components:1.0'

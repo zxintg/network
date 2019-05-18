@@ -11,7 +11,7 @@ import java.lang.reflect.Type;
  * Created by Administrator on 2018/5/21.
  */
 
-public abstract class BasePresenter <V extends IBaseView, M extends BaseModel> {
+public abstract class BasePresenter<V extends IBaseView, M extends BaseModel> {
 
     private V mView;
     private M mModel;
@@ -70,5 +70,21 @@ public abstract class BasePresenter <V extends IBaseView, M extends BaseModel> {
     public abstract void loadDatas();
 
     public abstract void OnClick(View v);
+
+
+    public abstract void onDestroy();
+
+    public abstract void onPause();
+
+    public abstract void onStart();
+
+    public abstract void onResume();
+
+    public abstract void onStop();
+
+    public abstract void onRestart();
+
+    public abstract void restartNetWork();
+
 
 }
