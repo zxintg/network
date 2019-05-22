@@ -15,7 +15,7 @@ public class RetrofitHelper {
     private int DEFAULT_TIME_OUT = 10;//超时时间5s
     private int DEFAULT_READ_TIME_OUT = 10;//读取时间
     private int DEFAULT_WRITE_TIME_OUT = 10;//读取时间
-    private volatile OkHttpClient mOkHttpClient;
+    private OkHttpClient mOkHttpClient = null;
     private Context mContext;
 
     private ZxinBaseInterceptor[] mInterceptors;
@@ -80,7 +80,7 @@ public class RetrofitHelper {
 
     /******
      * 添加
-     * @param mBaseUrls 与 mServices 一对一
+     * @param mBaseUrls 与 mServices 一对一 (mServices 对 mBaseUrls 一对多)
      * @param <API>
      */
     private <API extends ZXinBaseApi> void addZxinAPIs(String[] mBaseUrls, Class<API>[] mServices) {
@@ -95,7 +95,7 @@ public class RetrofitHelper {
             String key = mBaseUrls[i];
             Class value = mServices[i];
             API api = (API) getZxinAPI(key, value);
-            if (serviceMap.containsKey(key) || serviceMap.containsValue(api)) {
+            if (serviceMap.containsKey(key)) {
                 continue;
             }
             serviceMap.put(key, api);

@@ -3,6 +3,7 @@ package com.zxin.network.mvp.model;
 import android.content.Context;
 
 import com.zxin.network.MvpCallback;
+import com.zxin.network.http.RetrofitHelper;
 import com.zxin.network.mvp.presenter.BasePresenter;
 
 import java.util.ArrayList;
@@ -15,15 +16,16 @@ import java.util.Set;
  * Created by zxin on 2017/11/27.
  */
 
-public class BaseModel {
+public abstract class BaseModel {
 
     private Context context;
     //回调
     private Map<String, MvpCallback> listenerMap;
     //标志位 对应SimpleName
-    private Map<Integer,String> tagMap;
+    private Map<Integer, String> tagMap;
     //标志位 网络失败时使用
     private List<Integer> tagList;
+    private RetrofitHelper retrofitHelper = null;
 
     public Context getContext() {
         return context;
@@ -34,7 +36,7 @@ public class BaseModel {
     }
 
     public MvpCallback getListener(int tag) {
-        if(tagMap!=null){
+        if (tagMap != null) {
             return listenerMap.get(tagMap.get(tag));
         }
         return null;
@@ -45,7 +47,7 @@ public class BaseModel {
             listenerMap = new HashMap<>();
         }
         if (listenerMap != null && !listenerMap.containsKey(p.getClass().getSimpleName())) {
-            listenerMap.put(p.getClass().getSimpleName(),listeners);
+            listenerMap.put(p.getClass().getSimpleName(), listeners);
         }
     }
 
@@ -61,7 +63,7 @@ public class BaseModel {
         }
     }
 
-    public <P extends BasePresenter> void addTag(P p,int tag) {
+    public <P extends BasePresenter> void addTag(P p, int tag) {
         if (tagList == null) {
             tagList = new ArrayList<>();
         }
@@ -71,8 +73,8 @@ public class BaseModel {
         if (tagMap == null) {
             tagMap = new HashMap<>();
         }
-        if (!tagMap.containsKey(tag)){
-            tagMap.put(tag,p.getClass().getSimpleName());
+        if (!tagMap.containsKey(tag)) {
+            tagMap.put(tag, p.getClass().getSimpleName());
         }
     }
 
@@ -89,6 +91,15 @@ public class BaseModel {
         if (tagMap != null && !tagMap.isEmpty()) {
             tagMap.remove(tag);
         }
+    }
+
+    public abstract RetrofitHelper initHelper();
+
+    public RetrofitHelper getZxinWebApi() {
+        if (retrofitHelper == null) {
+            retrofitHelper = initHelper();
+        }
+        return retrofitHelper;
     }
 
 }
