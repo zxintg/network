@@ -92,6 +92,13 @@ public abstract class BaseModel {
             tagMap.remove(tag);
         }
     }
+    
+    public int getTag(){
+       if (tagList != null && !tagList.isEmpty()) {
+           return tagList.get(tagList.size()-1);
+       }
+        return -1;
+    }
 
     public abstract RetrofitHelper initHelper();
 
