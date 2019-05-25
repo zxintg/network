@@ -79,11 +79,11 @@ public class RetrofitHelper {
     }
 
     /******
-     * 添加
+     * 添加 在create之后设置
      * @param mBaseUrls 与 mServices 一对一 (mServices 对 mBaseUrls 一对多)
      * @param <API>
      */
-    private <API extends ZXinBaseApi> void addZxinAPIs(String[] mBaseUrls, Class<API>[] mServices) {
+    public <API extends ZXinBaseApi> void addZxinAPIs(String[] mBaseUrls, Class<API>[] mServices) {
         if (mBaseUrls == null || mServices == null || mBaseUrls.length == 0 || mServices.length == 0 || mBaseUrls.length != mServices.length) {
             return;
         }
