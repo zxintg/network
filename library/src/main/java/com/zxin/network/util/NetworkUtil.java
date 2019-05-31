@@ -26,17 +26,27 @@ public class NetworkUtil {
     private static int TIMEOUT = 3000; // TIMEOUT
 
 
-    private Context mContext;
+    private static Context mContext;
     private static volatile NetworkUtil networkUtil = null;
-    private NetworkUtil(Context mContext) {
-        this.mContext = mContext;
+
+    private NetworkUtil() {
+
+    }
+
+    /****
+     * 为防止内存泄漏
+     * @param mcontext
+     */
+    private static void setContext(Context mcontext){
+        mContext = mcontext;
     }
 
     public static NetworkUtil getInstance(Context mContext) {
+        setContext(mContext.getApplicationContext());
         if (networkUtil == null) {
             synchronized (NetworkUtil.class) {
                 if (networkUtil == null) {
-                    networkUtil = new NetworkUtil(mContext);
+                    networkUtil = new NetworkUtil();
                 }
             }
         }
