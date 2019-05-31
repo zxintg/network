@@ -24,29 +24,18 @@ public class NetworkUtil {
     public static int NET_NOT_PREPARE = 3; // Net no ready
     public static int NET_ERROR = 4; //net error
     private static int TIMEOUT = 3000; // TIMEOUT
-
-
-    private static Context mContext;
+    private Context mContext;
     private static volatile NetworkUtil networkUtil = null;
 
-    private NetworkUtil() {
-
-    }
-
-    /****
-     * 为防止内存泄漏
-     * @param mcontext
-     */
-    private static void setContext(Context mcontext){
-        mContext = mcontext;
+    private NetworkUtil(Context mContext) {
+        this.mContext = mContext;
     }
 
     public static NetworkUtil getInstance(Context mContext) {
-        setContext(mContext.getApplicationContext());
         if (networkUtil == null) {
             synchronized (NetworkUtil.class) {
-                if (networkUtil == null) {
-                    networkUtil = new NetworkUtil();
+                if (networkUtil == null) {//防止内存泄漏使用 mContext.getApplicationContext() 代替 mContext
+                    networkUtil = new NetworkUtil(mContext.getApplicationContext());
                 }
             }
         }
