@@ -30,87 +30,118 @@ import java.util.concurrent.TimeUnit;
  *     revise:
  * </pre>
  */
-public final class PoolThread implements Executor{
+public final class PoolThread implements Executor {
+    //线层类型
+    private int mType;
 
+    private int mSize;
+
+    private int mPriority;
     /**
      * 线程池
      */
-    private ExecutorService pool;
+    private ExecutorService mPool;
     /**
      * 默认线程名字
      */
-    private String defName;
+    private String mDefName;
     /**
      * 默认线程回调
      */
-    private ThreadCallback defCallback;
+    private ThreadCallback mDefCallback;
     /**
      * 默认线程传递
      */
-    private Executor defDeliver;
+    private Executor mDefDeliver;
 
     /**
      * 确保多线程配置没有冲突
      */
-    private ThreadLocal<ThreadConfigs> local;
+    private ThreadLocal<ThreadConfigs> mLocal;
 
-    private PoolThread(int type, int size, int priority, String name, ThreadCallback callback,
-                       Executor deliver, ExecutorService pool) {
-        if (pool == null) {
-            //创建线程池
-            pool = createPool(type, size, priority);
-        }
-        this.pool = pool;
-        this.defName = name;
-        this.defCallback = callback;
-        this.defDeliver = deliver;
-        this.local = new ThreadLocal<>();
+    private PoolThread() {
+
     }
 
+    private void setType(int type) {
+        this.mType = type;
+    }
+
+    private void setSize(int size) {
+        this.mSize = size;
+    }
+
+    private void setPriority(int priority) {
+        this.mPriority = priority;
+    }
+
+    private void setPool(ExecutorService mPool) {
+        if (mPool == null) {
+            //创建线程池
+            mPool = createPool(mType, mSize, mPriority);
+        }
+        this.mPool = mPool;
+    }
+
+    private void setDefName(String mDefName){
+        this.mDefName = mDefName;
+    }
+
+    private void setDefCallback(ThreadCallback mDefCallback){
+        this.mDefCallback = mDefCallback;
+    }
+
+    private void setDefDeliver(Executor mDefDeliver){
+        this.mDefDeliver = mDefDeliver;
+    }
+
+    private void setLocal(ThreadLocal<ThreadConfigs> mLocal){
+        this.mLocal = mLocal;
+    }
 
 
     /**
      * 为当前的任务设置线程名。
-     * @param name              线程名字
-     * @return                  PoolThread
+     *
+     * @param name 线程名字
+     * @return PoolThread
      */
-    public PoolThread setName(String name) {
+    public void setName(String name) {
         getLocalConfigs().name = name;
-        return this;
     }
 
 
     /**
      * 设置当前任务的线程回调，如果未设置，则应使用默认回调。
-     * @param callback          线程回调
-     * @return                  PoolThread
+     *
+     * @param callback 线程回调
+     * @return PoolThread
      */
-    public PoolThread setCallback (ThreadCallback callback) {
+    public void setCallback(ThreadCallback callback) {
         getLocalConfigs().callback = callback;
-        return this;
     }
 
     /**
      * 设置当前任务的延迟时间.
      * 只有当您的线程池创建时，它才会产生效果。
-     * @param time              时长
-     * @param unit              time unit
-     * @return                  PoolThread
+     *
+     * @param time 时长
+     * @param unit time unit
+     * @return PoolThread
      */
-    public PoolThread setDelay (long time, TimeUnit unit) {
+    public void setDelay(long time, TimeUnit unit) {
         long delay = unit.toMillis(time);
         getLocalConfigs().delay = Math.max(0, delay);
-        return this;
     }
 
     /**
      * 设置当前任务的线程传递。如果未设置，则应使用默认传递。
-     * @param deliver           thread deliver
-     * @return                  PoolThread
+     *
+     * @param deliver thread deliver
+     * @return PoolThread
      */
-    public PoolThread setDeliver(Executor deliver){
+    public void setDeliver(Executor deliver) {
         getLocalConfigs().deliver = deliver;
-        return this;
     }
 
 
@@ -119,16 +150,17 @@ public final class PoolThread implements Executor{
      * 这个是实现接口Executor中的execute方法
      * 在将来的某个时间执行给定的命令。该命令可以在新线程、池线程或调用线程中执行，这取决于{@code Executor}实现。
      * 提交任务无返回值
-     * @param runnable              task，注意添加非空注解
+     *
+     * @param runnable task，注意添加非空注解
      */
     @Override
-    public void execute (@NonNull Runnable runnable) {
+    public void execute(@NonNull Runnable runnable) {
         //获取线程thread配置信息
         ThreadConfigs configs = getLocalConfigs();
         //设置runnable任务
         runnable = new RunnableWrapper(configs).setRunnable(runnable);
         //启动任务
-        DelayTaskExecutor.get().postDelay(configs.delay, pool, runnable);
+        DelayTaskExecutor.get().postDelay(configs.delay, mPool, runnable);
         //重置线程Thread配置
         resetLocalConfigs();
     }
@@ -136,29 +168,31 @@ public final class PoolThread implements Executor{
 
     /**
      * 启动异步任务，回调用于接收可调用任务的结果。
-     * @param callable              callable
-     * @param callback              callback
-     * @param <T> type
+     *
+     * @param callable callable
+     * @param callback callback
+     * @param <T>      type
      */
     public <T> void async(@NonNull Callable<T> callable, AsyncCallback<T> callback) {
         ThreadConfigs configs = getLocalConfigs();
         configs.asyncCallback = callback;
         Runnable runnable = new RunnableWrapper(configs).setCallable(callable);
-        DelayTaskExecutor.get().postDelay(configs.delay, pool, runnable);
+        DelayTaskExecutor.get().postDelay(configs.delay, mPool, runnable);
         resetLocalConfigs();
     }
 
     /**
      * 发射任务
      * 提交任务有返回值
-     * @param callable              callable
-     * @param <T>                   type
+     *
+     * @param callable callable
+     * @param <T>      type
      * @return {@link Future}
      */
-    public <T> Future<T> submit (Callable<T> callable) {
+    public <T> Future<T> submit(Callable<T> callable) {
         Future<T> result;
         callable = new CallableWrapper<>(getLocalConfigs(), callable);
-        result = pool.submit(callable);
+        result = mPool.submit(callable);
         resetLocalConfigs();
         return result;
     }
@@ -166,28 +200,30 @@ public final class PoolThread implements Executor{
 
     /**
      * 获取要创建的线程池。
-     * @return                      线程池
+     *
+     * @return 线程池
      */
     public ExecutorService getExecutor() {
-        return pool;
+        return mPool;
     }
 
 
     /**
      * 销毁的时候可以调用这个方法
      */
-    public void close(){
-        if(local!=null){
-            local.remove();
-            local = null;
+    public void close() {
+        if (mLocal != null) {
+            mLocal.remove();
+            mLocal = null;
         }
     }
 
     /**
      * 创建线程池，目前支持以下四种
-     * @param type                  类型
-     * @param size                  数量size
-     * @param priority              优先级
+     *
+     * @param type     类型
+     * @param size     数量size
+     * @param priority 优先级
      * @return
      */
     private ExecutorService createPool(int type, int size, int priority) {
@@ -209,29 +245,29 @@ public final class PoolThread implements Executor{
     }
 
 
-
     /**
      * 当启动任务或者发射任务之后需要调用该方法
      * 重置本地配置，置null
      */
     private synchronized void resetLocalConfigs() {
-        local.set(null);
+        mLocal.set(null);
     }
 
 
     /**
      * 注意需要用synchronized修饰，解决了多线程的安全问题
      * 获取本地配置参数
+     *
      * @return
      */
     private synchronized ThreadConfigs getLocalConfigs() {
-        ThreadConfigs configs = local.get();
+        ThreadConfigs configs = mLocal.get();
         if (configs == null) {
             configs = new ThreadConfigs();
-            configs.name = defName;
-            configs.callback = defCallback;
-            configs.deliver = defDeliver;
-            local.set(configs);
+            configs.name = mDefName;
+            configs.callback = mDefCallback;
+            configs.deliver = mDefDeliver;
+            mLocal.set(configs);
         }
         return configs;
     }
@@ -252,7 +288,7 @@ public final class PoolThread implements Executor{
         Executor deliver;
         ExecutorService pool;
 
-        private ThreadBuilder(int size,  int type, ExecutorService pool) {
+        private ThreadBuilder(int size, int type, ExecutorService pool) {
             this.size = Math.max(1, size);
             this.type = type;
             this.pool = pool;
@@ -302,8 +338,8 @@ public final class PoolThread implements Executor{
         /**
          * 将默认线程名设置为“已使用”。
          */
-        public ThreadBuilder setName (@NonNull String name) {
-            if (name.length()>0) {
+        public ThreadBuilder setName(@NonNull String name) {
+            if (name.length() > 0) {
                 this.name = name;
             }
             return this;
@@ -312,7 +348,7 @@ public final class PoolThread implements Executor{
         /**
          * 将默认线程优先级设置为“已使用”。
          */
-        public ThreadBuilder setPriority (int priority) {
+        public ThreadBuilder setPriority(int priority) {
             this.priority = priority;
             return this;
         }
@@ -320,7 +356,7 @@ public final class PoolThread implements Executor{
         /**
          * 将默认线程回调设置为“已使用”。
          */
-        public ThreadBuilder setCallback (ThreadCallback callback) {
+        public ThreadBuilder setCallback(ThreadCallback callback) {
             this.callback = callback;
             return this;
         }
@@ -335,7 +371,8 @@ public final class PoolThread implements Executor{
 
         /**
          * 创建用于某些配置的线程管理器。
-         * @return                  对象
+         *
+         * @return 对象
          */
         public PoolThread build() {
             //最大值
@@ -344,7 +381,7 @@ public final class PoolThread implements Executor{
             priority = Math.min(Thread.MAX_PRIORITY, priority);
 
             size = Math.max(1, size);
-            if (name==null || name.length()==0) {
+            if (name == null || name.length() == 0) {
                 // 如果没有设置名字，那么就使用下面默认的线程名称
                 switch (type) {
                     case TYPE_CACHE:
@@ -369,7 +406,16 @@ public final class PoolThread implements Executor{
                     deliver = JavaDeliver.getInstance();
                 }
             }
-            return new PoolThread(type, size, priority, name, callback, deliver, pool);
+            PoolThread thread = new PoolThread();
+            thread.setType(type);
+            thread.setSize(size);
+            thread.setPriority(priority);
+            thread.setPool(pool);
+            thread.setDefName(name);
+            thread.setDefCallback(callback);
+            thread.setDefDeliver(deliver);
+            thread.setLocal(new ThreadLocal<ThreadConfigs>());
+            return thread;
         }
     }
 }
